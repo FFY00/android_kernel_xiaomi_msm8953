@@ -5021,7 +5021,6 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	trace_sched_waking(p);
 
 	success = 1; /* we're going to change ->state */
-
 	/*
 	 * Ensure we load p->on_rq _after_ p->state, otherwise it would
 	 * be possible to, falsely, observe p->on_rq == 0 and get stuck
