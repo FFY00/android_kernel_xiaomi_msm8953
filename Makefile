@@ -351,20 +351,10 @@ MAKEFLAGS += --include-dir=$(srctree)
 $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
-# Set optimization flags for gcc
-CC_FLAGS := -O3 -fmodulo-sched -fmodulo-sched-allow-regmoves \
-	-fira-loop-pressure -ftree-vectorize \
-	-mtune=cortex-a53 \
-	-Wno-maybe-uninitialized -Wno-misleading-indentation \
-	-Wno-array-bounds -Wno-shift-overflow
-
-LD_FLAGS := -O3 --sort-common --strip-debug
-
-
 # Make variables (CC, etc...)
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-CC		= $(CCACHE) $(CROSS_COMPILE)gcc $(CC_FLAGS)
+REAL_CC		= $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -415,7 +405,7 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
-		   -Wno-format-security -fno-delete-null-pointer-checks\
+		   -Wno-format-security \
 		   -std=gnu89
 
 KBUILD_AFLAGS_KERNEL :=
@@ -627,7 +617,9 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
-
+else
+KBUILD_CFLAGS	+= -O2
+endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
 KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
