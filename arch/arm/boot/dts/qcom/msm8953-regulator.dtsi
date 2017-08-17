@@ -890,7 +890,7 @@
 		qcom,ldo-voltage-ceiling = <620000 680000 750000>;
 		qcom,ldo-voltage-floor =   <510000 510000 600000>;
 
-		qcom,num-corners = <7>;
+		qcom,num-corners = <8>;
 		qcom,num-ldo-corners = <3>;
 		qcom,ldo-enable-corner-map = <1 1 1 0 0 0 0>;
 		qcom,init-corner = <4>;
