@@ -16,6 +16,8 @@
 #include <linux/kthread.h>
 #include <linux/swap.h>
 #include <linux/timer.h>
+#include <linux/freezer.h>
+#include <linux/sched.h>
 
 #include "f2fs.h"
 #include "segment.h"
@@ -1073,6 +1075,17 @@ static void __issue_discard_cmd(struct f2fs_sb_info *sbi, bool issue_cond)
 
 			if (!issue_cond || is_idle(sbi))
 				__submit_discard_cmd(sbi, dc);
+				issued++;
+
+				if (fatal_signal_pending(current))
+					break;
+				continue;
+			}
+
+			if (!issue_cond || is_idle(sbi)) {
+				issued++;
+				__submit_discard_cmd(sbi, dc);
+			}
 			if (issue_cond && iter++ > DISCARD_ISSUE_RATE)
 				goto out;
 		}
@@ -1130,7 +1143,7 @@ void f2fs_wait_discard_bio(struct f2fs_sb_info *sbi, block_t blkaddr)
 	}
 }
 
-/* This comes from f2fs_put_super */
+/* This comes from f2fs_put_super and f2fs_trim_fs */
 void f2fs_wait_discard_bios(struct f2fs_sb_info *sbi)
 {
 	__issue_discard_cmd(sbi, false);
@@ -2109,6 +2122,9 @@ int f2fs_trim_fs(struct f2fs_sb_info *sbi, struct fstrim_range *range)
 
 		schedule();
 	}
+	/* It's time to issue all the filed discards */
+	mark_discard_range_all(sbi);
+	f2fs_wait_discard_bios(sbi);
 out:
 	range->len = F2FS_BLK_TO_BYTES(cpc.trimmed);
 	return err;
