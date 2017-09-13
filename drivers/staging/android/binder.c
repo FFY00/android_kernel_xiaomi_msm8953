@@ -257,11 +257,6 @@ static struct binder_transaction_log_entry *binder_transaction_log_add(
 	 */
 	smp_wmb();
 	memset(e, 0, sizeof(*e));
-	log->next++;
-	if (log->next == ARRAY_SIZE(log->entry)) {
-		log->next = 0;
-		log->full = 1;
-	}
 	return e;
 }
 
@@ -414,7 +409,6 @@ struct binder_ref_death {
 	 */
 	struct binder_work work;
 	binder_uintptr_t cookie;
-	struct binder_proc *wait_proc;
 };
 
 /**
@@ -3699,7 +3693,6 @@ static int binder_thread_write(struct binder_proc *proc,
 					binder_proc_unlock(proc);
 					break;
 				}
-				binder_proc_lock(proc, __LINE__);
 				ref->death = NULL;
 				binder_inner_proc_lock(proc);
 				if (list_empty(&death->work.entry)) {
@@ -4064,6 +4057,7 @@ retry:
 		case BINDER_WORK_CLEAR_DEATH_NOTIFICATION: {
 			struct binder_ref_death *death;
 			uint32_t cmd;
+			binder_uintptr_t cookie;
 
 			death = container_of(w, struct binder_ref_death, work);
 			if (w->type == BINDER_WORK_CLEAR_DEATH_NOTIFICATION)
@@ -4892,6 +4886,7 @@ static int binder_node_release(struct binder_node *node, int refs)
 		if (!ref->death) {
 			binder_inner_proc_unlock(ref->proc);
 			continue;
+		}
 
 		death++;
 
@@ -5572,8 +5567,6 @@ static int binder_transaction_log_show(struct seq_file *m, void *unused)
 
 		print_binder_transaction_log_entry(m, &log->entry[index]);
 	}
-	for (i = 0; i < log->next; i++)
-		print_binder_transaction_log_entry(m, &log->entry[i]);
 	return 0;
 }
 
