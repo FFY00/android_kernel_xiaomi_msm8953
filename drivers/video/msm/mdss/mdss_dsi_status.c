@@ -24,6 +24,7 @@
 #include <linux/kobject.h>
 #include <linux/string.h>
 #include <linux/sysfs.h>
+#include <linux/interrupt.h>
 
 #include "mdss_fb.h"
 #include "mdss_dsi.h"
