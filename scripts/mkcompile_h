@@ -54,7 +54,7 @@ else
 fi
 
 LINUX_COMPILE_BY="vidrikdev"
-LINUX_COMPILE_HOST="@buildhost#1"
+LINUX_COMPILE_HOST="buildhost"
 
 UTS_VERSION="#$VERSION"
 CONFIG_FLAGS=""
