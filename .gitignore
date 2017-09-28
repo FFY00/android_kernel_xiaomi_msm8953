@@ -96,3 +96,9 @@ x509.genkey
 
 # Kconfig presets
 all.config
+
+# Build
+out/*.zip
+out/MIUI/Image
+out/MIUI/zImage
+toolchain_path.txt
